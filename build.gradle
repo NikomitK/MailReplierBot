@@ -1,0 +1,30 @@
+plugins {
+    id 'java'
+}
+
+
+group 'de.nikomitk.mailreplierbot'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+apply plugin: 'java'
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    implementation 'javax.mail:mailapi:1.4.3-rc1'
+    implementation 'javax.activation:activation:1.1.1'
+}
+jar {
+    manifest {
+        attributes(
+           'Class-Path': configurations.compile.collect {it.getName() }.join(' '),
+           'Main-Class': 'de.nikomitk.mailreplierbot.Main')
+    }
+    from configurations.compile.collect { entry -> zipTree(entry) }
+}
+test {
+    useJUnitPlatform()
+}
