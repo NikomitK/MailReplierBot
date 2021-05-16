@@ -13,14 +13,17 @@ import java.util.Date;
 import java.util.Properties;
 
 public class Main implements ActionListener{
-    private static File credsFile = new File(File.separator + "creds.txt");
-    private static File replyFile = new File(File.separator + "reply.txt");
-    private static File triggerFile = new File(File.separator + "trigger.txt");
-    private static SettingsGui gui;
+    private static File credsFile = new File("data" + File.separator + "creds.txt");
+    private static File replyFile = new File("data" + File.separator + "reply.txt");
+    private static File triggerFile = new File("data" + File.separator + "trigger.txt");
+    public static SettingsGui gui;
     private static String senderMail, yourMail, yourPassword, yourReply, triggerText, lastSubject;
     public static boolean credsSet = false;
     public static final Object lock = new Object();
+
     public static void main(String [] args) throws IOException, InterruptedException {
+//        Process p = Runtime.getRuntime().exec("cmd.exe /c start java -jar " + (
+//                new File(Main.class.getProtectionDomain().getCodeSource().getLocation().getPath())).getAbsolutePath());
         DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd");
         gui = new SettingsGui();
         if(!credsSet){
@@ -36,34 +39,36 @@ public class Main implements ActionListener{
             yourReply = gui.getYourReply();
             triggerText = gui.getTrigger();
             lastSubject = gui.getLastSubject();
-            String heute = dateFormat.format(new Date());
+            String today = dateFormat.format(new Date());
             Properties properties = new Properties();
-            //properties.put("mail.store.protocol", "imap");
-            properties.put("mail.imap.host", "imap.gmail.com");
-            properties.put("mail.imap.port", "993");
+            String [] data = gui.getServerCreds();
+            properties.put("mail.imap.host", data[0]);
+            properties.put("mail.imap.port", data[1]);
             properties.put("mail.imap.starttls.enable", "true");
             properties.put("mail.smtp.auth", "true");
             properties.put("mail.smtp.starttls.enable", "true");
-            properties.put("mail.smtp.host", "smtp.gmail.com");
-            properties.put("mail.smtp.port", "25");
+            properties.put("mail.smtp.host", data[2]);
+            properties.put("mail.smtp.port", data[3]);
             Session session = Session.getDefaultInstance(properties);
             try {
                 Store store = session.getStore("imaps");
-                store.connect("imap.gmail.com", yourMail,
+                store.connect(data[0], yourMail,
                         yourPassword);
                 Folder folder = store.getFolder("Inbox");
-                if (!folder.exists()) gui.folderNotExist();
+                //if (!folder.exists()) gui.folderNotExist();
                 folder.open(Folder.READ_ONLY);
 
                 Message[] messages = folder.getMessages();
                 if (messages.length != 0) {
                     for (int i = messages.length - 1; i > 0; i--) {
                         Message message = messages[i];
-                        if (!heute.equals(dateFormat.format(message.getSentDate()))) continue;
+                        System.out.println(dateFormat.format(message.getSentDate()));
+                        if (!today.equals(dateFormat.format(message.getSentDate()))) break;
                         if (!getMailAdress(InternetAddress.toString(message.getFrom())).equals(senderMail)) continue;
-                        if (message.getSubject().equals(lastSubject)) break;
+                        if (message.getSubject().contains(lastSubject)) break;
                         if (!message.getContent().toString().contains(triggerText)) continue;
                         //antwort schreibben
+                        System.out.println("gefunden");
                         Message replyMessage = message.reply(false);
                         replyMessage.setFrom(new InternetAddress(InternetAddress.toString(message
                                 .getRecipients(Message.RecipientType.TO))));
@@ -75,8 +80,8 @@ public class Main implements ActionListener{
                             t.sendMessage(replyMessage,
                                     replyMessage.getAllRecipients());
                             t.close();
-                            new File(File.separator + "lastSubject.txt").createNewFile();
-                            PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter("lastSubject.txt", false)), true);
+                            new File("data" + File.separator + "lastSubject.txt").createNewFile();
+                            PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter("data/lastSubject.txt", false)), true);
                             pw.println(message.getSubject());
                             pw.close();
 
@@ -89,7 +94,7 @@ public class Main implements ActionListener{
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            Thread.sleep(600000);
+            Thread.sleep(6000);
         }
     }
 
@@ -123,19 +128,19 @@ public class Main implements ActionListener{
                         Main.lock.notifyAll();
                     }
                 }
-                PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter("creds.txt", false)), true);
+                PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter("data/creds.txt", false)), true);
                 pw.println(printCreds);
                 pw.close();
                 replyFile.createNewFile();
-                pw = new PrintWriter(new BufferedWriter(new FileWriter("reply.txt", false)), true);
+                pw = new PrintWriter(new BufferedWriter(new FileWriter("data/reply.txt", false)), true);
                 pw.println(gui.getYourReply());
                 pw.close();
                 triggerFile.createNewFile();
-                pw = new PrintWriter(new BufferedWriter(new FileWriter("trigger.txt", false)), true);
+                pw = new PrintWriter(new BufferedWriter(new FileWriter("data/trigger.txt", false)), true);
                 pw.println(gui.getTrigger());
                 pw.close();
             }
-            else JOptionPane.showMessageDialog(null, "Falsche daten");
+            else JOptionPane.showMessageDialog(null, "Incorrect Data");
 
         } catch (Exception exception) {
             exception.printStackTrace();

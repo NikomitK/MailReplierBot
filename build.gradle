@@ -4,7 +4,7 @@ plugins {
 
 
 group 'de.nikomitk.mailreplierbot'
-version '1.0.1-GMAIL'
+version '0.9'
 
 repositories {
     mavenCentral()

@@ -5,9 +5,11 @@ import javax.swing.*;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Scanner;
 
 public class SettingsGui extends JFrame{
@@ -15,12 +17,14 @@ public class SettingsGui extends JFrame{
     public JTextField yourMail, senderMail;
     private JPasswordField yourPassword;
     private JTextArea yourReply, replyTo;
-    public JButton submit;
+    public JButton save;
     boolean openGui = true;
     Scanner scc = null;
-    private static File credsFile = new File(File.separator + "creds.txt");
-    private static File replyFile = new File(File.separator + "reply.txt");
-    private static File triggerFile = new File(File.separator + "trigger.txt");
+    private static File credsFile = new File("data" + File.separator + "creds.txt");
+    private static File replyFile = new File("data" + File.separator + "reply.txt");
+    private static File triggerFile = new File("data" + File.separator + "trigger.txt");
+    private static File serverCredFile = new File("data" + File.separator + "serverCreds.txt");
+    private String [] serverCreds = new String[4];
 
     public SettingsGui() throws IOException {
         final JPanel everyThing, left, right, lTop, lBottom;
@@ -38,46 +42,60 @@ public class SettingsGui extends JFrame{
             defaultItem = new MenuItem("Exit");
             defaultItem.addActionListener(e -> System.exit(0));
             popup.add(defaultItem);
-            TrayIcon trayIcon = new TrayIcon(ImageIO.read(new FileInputStream("pics/MailReplierLogo.png")), "Mail Reply Bot", popup);
+                //TrayIcon trayIcon = new TrayIcon(ImageIO.read(new FileInputStream("pics/MailReplierLogo.png")), "Mail Reply Bot", popup);
+            TrayIcon trayIcon;
+            try {
+                trayIcon = new TrayIcon(ImageIO.read(new FileInputStream("pics/MailReplierLogo.png")), "Mail Reply Bot", popup);
+            }
+            catch (Exception e){
+                trayIcon = new TrayIcon(ImageIO.read(new URL("https://download1595.mediafire.com/d5q9y10gku3g/7cyat6wbcszlvy5/MailReplierLogo.png")), "Mail Reply Bot", popup);
+            }
             trayIcon.setImageAutoSize(true);
+            TrayIcon finalTrayIcon = trayIcon;
             addWindowStateListener(e -> {
                 if (e.getNewState() == ICONIFIED) {
                     try {
-                        tray.add(trayIcon);
+                        tray.add(finalTrayIcon);
                         setVisible(false);
                     } catch (AWTException awtException) {
                         awtException.printStackTrace();
                     }
                 }
-                if (e.getNewState() == WindowEvent.WINDOW_CLOSING) {
+                else if (e.getNewState() == WindowEvent.WINDOW_CLOSING) {
                     try {
-                        tray.add(trayIcon);
+                        tray.add(finalTrayIcon);
                         setVisible(false);
                     } catch (AWTException awtException) {
                         awtException.printStackTrace();
                     }
                 }
-                if (e.getNewState() == 7) {
+                else if (e.getNewState() == 7) {
                     try {
-                        tray.add(trayIcon);
+                        tray.add(finalTrayIcon);
                         setVisible(false);
                     } catch (AWTException awtException) {
                         awtException.printStackTrace();
                     }
                 }
-                if (e.getNewState() == MAXIMIZED_BOTH) {
-                    tray.remove(trayIcon);
+                else if (e.getNewState() == MAXIMIZED_BOTH) {
+                    tray.remove(finalTrayIcon);
                     setVisible(true);
                 }
-                if (e.getNewState() == NORMAL) {
-                    tray.remove(trayIcon);
+                else if (e.getNewState() == NORMAL) {
+                    tray.remove(finalTrayIcon);
                     setVisible(true);
                 }
             });
         }
         //setVisible(openGui);
-        setTitle("Mail-Replier Settings GMAIL EDITION");
-        setIconImage(ImageIO.read(new FileInputStream("pics/MailReplierLogo.png")));
+        setTitle("Mail-Replier Settings");
+        //setIconImage(ImageIO.read(new FileInputStream("pics/MailReplierLogo.png")));
+        try{
+            setIconImage(ImageIO.read(new FileInputStream("pics/MailReplierLogo.png")));
+        }
+        catch (Exception e){
+            setIconImage(ImageIO.read(new URL("https://download1595.mediafire.com/d5q9y10gku3g/7cyat6wbcszlvy5/MailReplierLogo.png")));
+        }
         setDefaultCloseOperation(JFrame.ICONIFIED);
         setResizable(false);
         addWindowListener(new WindowAdapter() {
@@ -86,6 +104,8 @@ public class SettingsGui extends JFrame{
                 setExtendedState(JFrame.ICONIFIED);
             }
         });
+
+        // JPanelception
         everyThing = new JPanel(new GridLayout(0, 2));
         add(everyThing);
         left = new JPanel(new GridLayout(2, 0));
@@ -98,6 +118,8 @@ public class SettingsGui extends JFrame{
         MatteBorder test = BorderFactory.createMatteBorder(5, 0, 0, 0, Color.gray);
         lBottom.setBorder(test);
         left.add(lBottom);
+
+        // LTOP stuff
         yourMail = new JTextField("Your Mail address");
         yourMail.setForeground(Color.lightGray);
         yourMail.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -163,6 +185,8 @@ public class SettingsGui extends JFrame{
             }
         });
         lTop.add(senderMail);
+
+        // TextArea stuff
         replyTo = new JTextArea("Text to reply to");
         replyTo.setForeground(Color.lightGray);
         replyTo.addFocusListener(new FocusListener() {
@@ -209,15 +233,15 @@ public class SettingsGui extends JFrame{
         right.add(areaPane, BorderLayout.PAGE_START);
         replyPane = new JScrollPane(yourReply);
         lBottom.add(replyPane, BorderLayout.PAGE_START);
-        submit = new JButton("Submit!");
-        submit.setFont(new Font("Arial", Font.PLAIN, 16));
-        submit.setFocusable(false);
-        submit.addActionListener(new Main());
-        lTop.add(submit);
+        save = new JButton("Save!");
+        save.setFont(new Font("Arial", Font.PLAIN, 16));
+        save.setFocusable(false);
+        save.addActionListener(new Main());
+        lTop.add(save);
         pack();
         setSize(500, 500);
         try{
-            scc = new Scanner(new File("creds.txt"));
+            scc = new Scanner(new File("data/creds.txt"));
             yourMail.setText(scc.nextLine() + "");
             yourMail.setForeground(Color.black);
             openGui = false;
@@ -252,7 +276,7 @@ public class SettingsGui extends JFrame{
             openGui = true;
         }
         try{
-            Scanner scr = new Scanner(new File("reply.txt"));
+            Scanner scr = new Scanner(new File("data/reply.txt"));
             yourReply.setText(scr.nextLine());
             yourReply.setForeground(Color.black);
         }
@@ -261,7 +285,7 @@ public class SettingsGui extends JFrame{
             openGui = true;
         }
         try{
-            Scanner sct = new Scanner(new File("trigger.txt"));
+            Scanner sct = new Scanner(new File("data/trigger.txt"));
             replyTo.setText(sct.nextLine());
             replyTo.setForeground(Color.black);
         }
@@ -273,7 +297,93 @@ public class SettingsGui extends JFrame{
         yourMail.grabFocus();
         setVisible(true);
         if(!openGui) setExtendedState(JFrame.ICONIFIED);
+
+        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.addTab("Reply Settings", null, everyThing, "Settings for the reply");
+        JPanel serverSettings = new MailServerSettings();
+        tabbedPane.addTab("Server Settings", null, serverSettings, "Settings for the mailserver");
+        add(tabbedPane);
+        tabbedPane.setSelectedIndex(0);
+        pack();
+        setSize(500, 500);
     }
+
+//    public SettingsGui() throws IOException {
+//        setVisible(false);
+//        if (SystemTray.isSupported()) {
+//            SystemTray tray = SystemTray.getSystemTray();
+//            PopupMenu popup = new PopupMenu();
+//            MenuItem defaultItem = new MenuItem("Settings");
+//            defaultItem.addActionListener(e -> {
+//                setVisible(true);
+//                setAlwaysOnTop(true);
+//            });
+//            popup.add(defaultItem);
+//            defaultItem = new MenuItem("Exit");
+//            defaultItem.addActionListener(e -> System.exit(0));
+//            popup.add(defaultItem);
+//            TrayIcon trayIcon = new TrayIcon(ImageIO.read(new FileInputStream("pics/MailReplierLogo.png")), "Mail Reply Bot", popup);
+//            trayIcon.setImageAutoSize(true);
+//            addWindowStateListener(e -> {
+//                if (e.getNewState() == ICONIFIED) {
+//                    try {
+//                        tray.add(trayIcon);
+//                        setVisible(false);
+//                    } catch (AWTException awtException) {
+//                        awtException.printStackTrace();
+//                    }
+//                }
+//                else if (e.getNewState() == WindowEvent.WINDOW_CLOSING) {
+//                    try {
+//                        tray.add(trayIcon);
+//                        setVisible(false);
+//                    } catch (AWTException awtException) {
+//                        awtException.printStackTrace();
+//                    }
+//                }
+//                else if (e.getNewState() == 7) {
+//                    try {
+//                        tray.add(trayIcon);
+//                        setVisible(false);
+//                    } catch (AWTException awtException) {
+//                        awtException.printStackTrace();
+//                    }
+//                }
+//                else if (e.getNewState() == MAXIMIZED_BOTH) {
+//                    tray.remove(trayIcon);
+//                    setVisible(true);
+//                }
+//                else if (e.getNewState() == NORMAL) {
+//                    tray.remove(trayIcon);
+//                    setVisible(true);
+//                }
+//            });
+//        }
+//        //setVisible(openGui);
+//        setTitle("Mail-Replier Settings");
+//        setIconImage(ImageIO.read(new FileInputStream("pics/MailReplierLogo.png")));
+//        setDefaultCloseOperation(JFrame.ICONIFIED);
+//        setResizable(false);
+//        addWindowListener(new WindowAdapter() {
+//            @Override
+//            public void windowClosing(WindowEvent e) {
+//                setExtendedState(JFrame.ICONIFIED);
+//            }
+//        });
+//        JTabbedPane tabbedPane = new JTabbedPane();
+//        JPanel reply = new ReplySettings();
+//        tabbedPane.addTab("Reply Settings", null, reply, "Settings for the reply");
+//        JComponent panel2 = makeTextPanel("Panel #2");
+//        JPanel panel2 = new MailServerSettings();
+//        tabbedPane.addTab("Tab 2", null, panel2,
+//                "Does twice as much nothing");
+//        add(tabbedPane);
+//        pack();
+//        setSize(500, 500);
+//        Main.credsSet = !openGui;
+//        setVisible(true);
+//        //if(!openGui) setExtendedState(JFrame.ICONIFIED);
+//    }
 
     public String getYourMail() {
         if(yourMail.getText().equals("Your Mail address") || yourMail.getText().equals("") || !yourMail.getText().contains("@")){
@@ -319,7 +429,45 @@ public class SettingsGui extends JFrame{
         }
     }
 
-    public void folderNotExist(){
-
+    public String [] getServerCreds() throws IOException {
+        Scanner scs;
+        try{
+            scs = new Scanner(serverCredFile);
+        }
+        catch (Exception e){
+            serverCredFile.createNewFile();
+            scs = new Scanner(serverCredFile);
+        }
+        try{
+            serverCreds[0] = scs.nextLine();
+        }
+        catch(Exception e){
+            openGui = true;
+            serverCreds[0] = "";
+        }
+        try {
+            serverCreds[1] = scs.nextLine();
+        }
+        catch(Exception e){
+            openGui = true;
+            serverCreds[1] = "";
+        }
+        try{
+            serverCreds[2] = scs.nextLine();
+        }
+        catch (Exception e){
+            openGui = true;
+            serverCreds[2] = "";
+        }
+        try{
+            serverCreds[3] = scs.nextLine();
+        }
+        catch (Exception e){
+            openGui = true;
+            serverCreds[3] = "";
+        }
+        return serverCreds;
     }
+
+
 }
