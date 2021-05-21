@@ -1,5 +1,9 @@
 package de.nikomitk.mailreplierbot;
 
+import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.MatteBorder;
@@ -27,6 +31,16 @@ public class SettingsGui extends JFrame{
     private String [] serverCreds = new String[4];
 
     public SettingsGui() throws IOException {
+        FlatLightLaf.install();
+        try{
+            UIManager.setLookAndFeel(new FlatDarculaLaf());
+        }
+        catch (Exception e) {
+            System.out.println("laf not set");
+        }
+        setUndecorated(true);
+        getRootPane().setWindowDecorationStyle(JRootPane.FRAME);
+        SwingUtilities.updateComponentTreeUI(this);
         final JPanel everyThing, left, right, lTop, lBottom;
         JScrollPane  replyPane, areaPane;
         setVisible(false);
@@ -121,20 +135,17 @@ public class SettingsGui extends JFrame{
 
         // LTOP stuff
         yourMail = new JTextField("Your Mail address");
-        yourMail.setForeground(Color.lightGray);
         yourMail.setFont(new Font("Arial", Font.PLAIN, 16));
         yourMail.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
                 if (yourMail.getText().equals("Your Mail address"))
                     yourMail.setText("");
-                yourMail.setForeground(Color.black);
             }
 
             @Override
             public void focusLost(FocusEvent e) {
                 if (yourMail.getText().equals("")) {
-                    yourMail.setForeground(Color.lightGray);
                     yourMail.setText("Your Mail address");
                 }
             }
@@ -144,12 +155,10 @@ public class SettingsGui extends JFrame{
         yourPassword.setFont(new Font("Arial", Font.PLAIN, 16));
         yourPassword.setText("Your Password");
         yourPassword.setEchoChar((char) 0);
-        yourPassword.setForeground(Color.lightGray);
         yourPassword.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
                 if (new String(yourPassword.getPassword()).equals("Your Password")) {
-                    yourPassword.setForeground(Color.black);
                     yourPassword.setEchoChar('*');
                     yourPassword.setText("");
                 }
@@ -160,26 +169,22 @@ public class SettingsGui extends JFrame{
                 if (new String(yourPassword.getPassword()).equals("")) {
                     yourPassword.setText("Your Password");
                     yourPassword.setEchoChar((char) 0);
-                    yourPassword.setForeground(Color.lightGray);
                 }
             }
         });
         lTop.add(yourPassword);
         senderMail = new JTextField("Who you want to reply to");
-        senderMail.setForeground(Color.lightGray);
         senderMail.setFont(new Font("Arial", Font.PLAIN, 16));
         senderMail.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
                 if (senderMail.getText().equals("Who you want to reply to"))
                     senderMail.setText("");
-                senderMail.setForeground(Color.black);
             }
 
             @Override
             public void focusLost(FocusEvent e) {
                 if (senderMail.getText().equals("")) {
-                    senderMail.setForeground(Color.lightGray);
                     senderMail.setText("Who you want to reply to");
                 }
             }
@@ -188,19 +193,16 @@ public class SettingsGui extends JFrame{
 
         // TextArea stuff
         replyTo = new JTextArea("Text to reply to");
-        replyTo.setForeground(Color.lightGray);
         replyTo.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
                 if (replyTo.getText().equals("Text to reply to"))
                     replyTo.setText("");
-                replyTo.setForeground(Color.black);
             }
 
             @Override
             public void focusLost(FocusEvent e) {
                 if (replyTo.getText().equals("")) {
-                    replyTo.setForeground(Color.lightGray);
                     replyTo.setText("Text to reply to");
                 }
             }
@@ -209,19 +211,16 @@ public class SettingsGui extends JFrame{
         replyTo.setRows(50);
         replyTo.setFont(new Font("Arial", Font.PLAIN, 16));
         yourReply = new JTextArea("Your reply");
-        yourReply.setForeground(Color.lightGray);
         yourReply.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
                 if (yourReply.getText().equals("Your reply"))
                     yourReply.setText("");
-                yourReply.setForeground(Color.black);
             }
 
             @Override
             public void focusLost(FocusEvent e) {
                 if (yourReply.getText().equals("")) {
-                    yourReply.setForeground(Color.lightGray);
                     yourReply.setText("Your reply");
                 }
             }
@@ -243,7 +242,6 @@ public class SettingsGui extends JFrame{
         try{
             scc = new Scanner(new File("data/creds.txt"));
             yourMail.setText(scc.nextLine() + "");
-            yourMail.setForeground(Color.black);
             openGui = false;
         }
         catch (Exception e){
@@ -252,7 +250,6 @@ public class SettingsGui extends JFrame{
         }
         try{
             yourPassword.setText(scc.nextLine());
-            yourPassword.setForeground(Color.black);
             yourPassword.setEchoChar('*');
             openGui = false;
         }
@@ -264,7 +261,6 @@ public class SettingsGui extends JFrame{
             String sendErMail = scc.nextLine();
             if(!sendErMail.equals(yourMail.getText())) {
                 senderMail.setText(sendErMail);
-                senderMail.setForeground(Color.black);
                 openGui = false;
             }
             else throw new Exception("No Sender Email");
@@ -272,13 +268,11 @@ public class SettingsGui extends JFrame{
         catch(Exception e){
             e.printStackTrace();
             senderMail.setText("Who you want to reply to");
-            senderMail.setForeground(Color.lightGray);
             openGui = true;
         }
         try{
             Scanner scr = new Scanner(new File("data/reply.txt"));
             yourReply.setText(scr.nextLine());
-            yourReply.setForeground(Color.black);
         }
         catch(Exception e){
             e.printStackTrace();
@@ -287,7 +281,6 @@ public class SettingsGui extends JFrame{
         try{
             Scanner sct = new Scanner(new File("data/trigger.txt"));
             replyTo.setText(sct.nextLine());
-            replyTo.setForeground(Color.black);
         }
         catch(Exception e) {
             e.printStackTrace();
