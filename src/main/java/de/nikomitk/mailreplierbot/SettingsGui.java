@@ -295,6 +295,7 @@ public class SettingsGui extends JFrame{
         tabbedPane.addTab("Reply Settings", null, everyThing, "Settings for the reply");
         JPanel serverSettings = new MailServerSettings();
         tabbedPane.addTab("Server Settings", null, serverSettings, "Settings for the mailserver");
+        tabbedPane.addTab("Application Settings", null, new ApplicationSettings(), "Settings for this application");
         add(tabbedPane);
         tabbedPane.setSelectedIndex(0);
         pack();

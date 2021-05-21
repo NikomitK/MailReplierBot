@@ -1,5 +1,8 @@
 package de.nikomitk.mailreplierbot;
 
+import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatLightLaf;
+
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -11,7 +14,10 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
-
+//FIXME
+// - textareas always get "false"
+// - safe the selected theme (boolean)
+// - make delay that is searched for configurable
 public class Main implements ActionListener{
     private static File credsFile = new File("data" + File.separator + "creds.txt");
     private static File replyFile = new File("data" + File.separator + "reply.txt");
