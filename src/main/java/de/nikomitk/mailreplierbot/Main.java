@@ -12,7 +12,6 @@ import java.util.Date;
 import java.util.Properties;
 
 //TODO
-// - auto configure mail server
 // - make delay that is searched for configurable
 public class Main implements ActionListener {
     public static final Object lock = new Object();
