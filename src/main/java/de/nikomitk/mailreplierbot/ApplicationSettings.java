@@ -5,31 +5,37 @@ import com.formdev.flatlaf.FlatLightLaf;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Arrays;
 
 public class ApplicationSettings extends JPanel {
 
-    public ApplicationSettings(boolean darculaTheme) {
+    private final String[] savedSettings;
 
+    public ApplicationSettings(boolean darculaTheme, int searchDelay) {
+        Main.searchDelay = searchDelay * 60000L;
+        savedSettings = new String[2];
+        Arrays.fill(savedSettings, "" + "\n");
+        setLayout(new GridLayout(15, 1));
 
-        setLayout(new FlowLayout(FlowLayout.LEFT));
-        JCheckBox darculaMode = new JCheckBox("Darcula Theme");
-        darculaMode.setSelected(darculaTheme);
-        darculaMode.addActionListener(e -> {
-            if (darculaMode.isSelected()) {
+        JPanel themePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JLabel themeLabel = new JLabel("Darcula Theme");
+        JCheckBox themeCheckBox = new JCheckBox();
+        themeCheckBox.setSelected(darculaTheme);
+        themeCheckBox.addActionListener(e -> {
+            if (themeCheckBox.isSelected()) {
                 try {
                     UIManager.setLookAndFeel(new FlatDarculaLaf());
-                    System.out.println("Darcula set");
                 } catch (Exception ex) {
-                    System.out.println("Darcula not set");
                 }
             } else {
 
                 try {
                     UIManager.setLookAndFeel(new FlatLightLaf());
-                    System.out.println("Light set");
                 } catch (Exception ex) {
-                    System.out.println("Light not set");
                 }
                 SwingUtilities.updateComponentTreeUI(Main.gui);
             }
@@ -37,14 +43,39 @@ public class ApplicationSettings extends JPanel {
             try {
                 PrintWriter pw;
                 pw = new PrintWriter(new BufferedWriter(new FileWriter("data/replierConf.conf", false)), true);
-                pw.println(darculaMode.isSelected());
+                savedSettings[0] = themeCheckBox.isSelected() + "\n";
+                pw.println(savedSettings[0] + savedSettings[1]);
                 pw.close();
             } catch (IOException ioException) {
                 ioException.printStackTrace();
             }
 
         });
-        add(darculaMode);
+        themeCheckBox.setToolTipText("Select light or dark theme");
+        themePanel.add(themeLabel);
+        themePanel.add(themeCheckBox);
+        add(themePanel);
         Main.startupTheme = darculaTheme;
+
+        JPanel delayPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JLabel delayLabel = new JLabel("Search Delay");
+        JSpinner delaySpinner = new JSpinner(new SpinnerNumberModel(searchDelay, 1, 120, 1));
+        delaySpinner.addChangeListener(e -> {
+            int delay = (int) delaySpinner.getValue();
+            Main.searchDelay = delay * 60000;
+            savedSettings[1] = delay + "\n";
+            try {
+                PrintWriter pw;
+                pw = new PrintWriter(new BufferedWriter(new FileWriter("data/replierConf.conf", false)), true);
+                pw.println(savedSettings[0] + savedSettings[1]);
+                pw.close();
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+        });
+        delaySpinner.setToolTipText("Sets the time in minutes between each check if a mail arrived");
+        delayPanel.add(delayLabel);
+        delayPanel.add(delaySpinner);
+        add(delayPanel);
     }
 }

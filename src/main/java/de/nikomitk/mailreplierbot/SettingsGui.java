@@ -20,17 +20,18 @@ import java.util.Scanner;
 public class SettingsGui extends JFrame {
 
     private static final File serverCredFile = new File("data" + File.separator + "serverCreds.txt");
-    public JButton save;
-    public MailServerSettings serverSettings;
-    public boolean startupTheme = true;
-    boolean openGui;
-    Scanner scc = null;
     private final JTextField yourMail;
     private final JTextField senderMail;
     private final JPasswordField yourPassword;
     private final JTextArea yourReply;
     private final JTextArea replyTo;
     private final String[] serverCreds = new String[4];
+    public JButton save;
+    public MailServerSettings serverSettings;
+    public boolean startupTheme = true;
+    public int searchDelay = 10;
+    boolean openGui;
+    Scanner scc = null;
 
 
     public SettingsGui() throws IOException {
@@ -44,6 +45,13 @@ public class SettingsGui extends JFrame {
             Scanner sc = new Scanner(replierConf);
             String line1 = sc.nextLine();
             if (line1.equals("false")) startupTheme = false;
+            try {
+                String line2 = sc.nextLine();
+                if (!line2.equals("") && !line2.equals("null"))
+                    searchDelay = Integer.parseInt(line2);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -66,6 +74,8 @@ public class SettingsGui extends JFrame {
         setUndecorated(true);
         getRootPane().setWindowDecorationStyle(JRootPane.FRAME);
         SwingUtilities.updateComponentTreeUI(this);
+        pack();
+        setSize(500, 500);
         final JPanel everyThing, left, right, lTop, lBottom;
         JScrollPane replyPane, areaPane;
         setVisible(false);
@@ -115,20 +125,16 @@ public class SettingsGui extends JFrame {
                 } else if (e.getNewState() == MAXIMIZED_BOTH) {
                     tray.remove(finalTrayIcon);
                     setVisible(true);
+                    setSize(500, 500);
                 } else if (e.getNewState() == NORMAL) {
                     tray.remove(finalTrayIcon);
                     setVisible(true);
+                    setSize(500, 500);
                 }
             });
         }
-        //setVisible(openGui);
         setTitle("Mail-Replier Settings");
-        //setIconImage(ImageIO.read(new FileInputStream("pics/MailReplierLogo.png")));
-        try {
-            setIconImage(ImageIO.read(new FileInputStream("pics/MailReplierLogo.png")));
-        } catch (Exception e) {
-            setIconImage(ImageIO.read(new URL("https://download1595.mediafire.com/d5q9y10gku3g/7cyat6wbcszlvy5/MailReplierLogo.png")));
-        }
+        setIconImage(ImageIO.read(new FileInputStream("pics/MailReplierLogo.png")));
         setDefaultCloseOperation(JFrame.ICONIFIED);
         setResizable(false);
         addWindowListener(new WindowAdapter() {
@@ -300,7 +306,6 @@ public class SettingsGui extends JFrame {
             openGui = true;
         }
         Main.credsSet = !openGui;
-        yourMail.grabFocus();
         setVisible(true);
         if (!openGui) setExtendedState(JFrame.ICONIFIED);
 
@@ -308,7 +313,7 @@ public class SettingsGui extends JFrame {
         tabbedPane.addTab("Reply Settings", null, everyThing, "Settings for the reply");
         serverSettings = new MailServerSettings();
         tabbedPane.addTab("Server Settings", null, serverSettings, "Settings for the mailserver");
-        tabbedPane.addTab("Application Settings", null, new ApplicationSettings(startupTheme), "Settings for this application");
+        tabbedPane.addTab("Application Settings", null, new ApplicationSettings(startupTheme, searchDelay), "Settings for this application");
         add(tabbedPane);
         tabbedPane.setSelectedIndex(0);
         pack();

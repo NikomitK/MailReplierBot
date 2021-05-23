@@ -12,19 +12,22 @@ import java.util.Date;
 import java.util.Properties;
 
 //TODO
-// - make delay that is searched for configurable
+// - store configured delay
 public class Main implements ActionListener {
     public static final Object lock = new Object();
-    public static SettingsGui gui;
-    public static boolean credsSet = false;
-    public static boolean startupTheme;
     private static final File dataDir = new File("data");
+    private static final File picsDir = new File("pics");
     private static final File credsFile = new File("data" + File.separator + "creds.txt");
     private static final File replyFile = new File("data" + File.separator + "reply.txt");
     private static final File triggerFile = new File("data" + File.separator + "trigger.txt");
+    public static SettingsGui gui;
+    public static boolean credsSet = false;
+    public static boolean startupTheme;
+    public static long searchDelay = 60;
 
     public static void main(String[] args) throws IOException, InterruptedException {
         dataDir.mkdir();
+        picsDir.mkdir();
         DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd");
         gui = new SettingsGui();
         gui.startupTheme = startupTheme;
@@ -38,7 +41,6 @@ public class Main implements ActionListener {
             String yourMail = gui.getYourMail();
             String yourPassword = gui.getYourPassword();
             String senderMail = gui.getSenderMail();
-            String yourReply = gui.getYourReply();
             String triggerText = gui.getTrigger();
             String lastSubject = gui.getLastSubject();
             String today = dateFormat.format(new Date());
@@ -63,13 +65,11 @@ public class Main implements ActionListener {
                 if (messages.length != 0) {
                     for (int i = messages.length - 1; i > 0; i--) {
                         Message message = messages[i];
-                        System.out.println(dateFormat.format(message.getSentDate()));
                         if (!today.equals(dateFormat.format(message.getSentDate()))) break;
                         if (!getMailAdress(InternetAddress.toString(message.getFrom())).equals(senderMail)) continue;
                         if (message.getSubject().contains(lastSubject)) break;
                         if (!message.getContent().toString().contains(triggerText)) continue;
-                        //antwort schreibben
-                        System.out.println("gefunden");
+                        //write reply
                         Message replyMessage = message.reply(false);
                         replyMessage.setFrom(new InternetAddress(InternetAddress.toString(message
                                 .getRecipients(Message.RecipientType.TO))));
@@ -95,7 +95,7 @@ public class Main implements ActionListener {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            Thread.sleep(6000);
+            Thread.sleep(searchDelay);
         }
     }
 

@@ -185,12 +185,10 @@ public class MailServerSettings extends JPanel {
         add(save);
 
         mailProvider.addActionListener(e -> {
-            System.out.println("ich bin hier");
             if (autoSelect) {
                 mailProvider.setSelectedIndex(setSelectedProvider);
                 autoSelect = false;
             }
-            System.out.println(mailProvider.getSelectedIndex());
             imapServer.setText(providerData[mailProvider.getSelectedIndex()][0]);
             imapPort.setText(providerData[mailProvider.getSelectedIndex()][1]);
             smtpServer.setText(providerData[mailProvider.getSelectedIndex()][2]);
@@ -238,7 +236,6 @@ public class MailServerSettings extends JPanel {
     public void checkProvider(String mailAdress) {
         String selected;
         autoSelect = true;
-        System.out.println("Check provider, mail: " + mailAdress);
         if (mailAdress.toLowerCase(Locale.ROOT).contains("gmail")) selected = "1";
         else if (mailAdress.toLowerCase(Locale.ROOT).contains("web")) selected = "2";
         else if (mailAdress.toLowerCase(Locale.ROOT).contains("gmx")) selected = "3";
@@ -248,7 +245,5 @@ public class MailServerSettings extends JPanel {
         setSelectedProvider = Integer.parseInt(selected);
         mailProvider.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null));
         //"OTHER", "GMAIL", "WEB", "GMX", "ICLOUD", "T-ONLINE"
-
-        System.out.println("selected index: " + setSelectedProvider);
     }
 }
