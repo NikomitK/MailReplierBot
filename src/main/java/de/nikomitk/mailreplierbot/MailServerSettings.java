@@ -1,6 +1,9 @@
 package de.nikomitk.mailreplierbot;
 
 
+
+import lombok.Getter;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -12,238 +15,179 @@ import java.util.Scanner;
 
 public class MailServerSettings extends JPanel {
 
-    private static final File serverCredFile = new File("data" + File.separator + "serverCreds.txt");
+    JTextField imapServer, imapPort, smtpServer, smtpPort;
     private final JComboBox mailProvider;
-    private int setSelectedProvider = 0;
-    private boolean autoSelect = false;
+    EMailProvider [] providerlist;
+
+
 
     public MailServerSettings() throws IOException {
         setLayout(new GridLayout(6, 1, 0, 2));
-        String[] providers = {"OTHER", "GMAIL", "WEB", "GMX", "ICLOUD", "T-ONLINE"};
-        String[][] providerData = {
-                {"Imap server", "Imap port", "Smtp server", "Smtp port"},
-                {"imap.gmail.com", "993", "smtp.gmail.com", "25"},
-                {"imap.web.de", "993", "smtp.web.de", "25"},
-                {"imap.gmx.net", "993", "mail.gmx.net", "25"},
-                {"imap.mail.me.com", "993", "smtp.mail.me.com", "25"},
-                {"secureimap.t-online.de", "993", "securesmtp.t-online.de", "25"}
-        };
+//        String[] providers = {"OTHER", "GMAIL", "WEB", "GMX", "ICLOUD", "T-ONLINE"};
+//        String[][] providerData = {
+//                {"Imap server", "Imap port", "Smtp server", "Smtp port"},
+//                {"imap.gmail.com", "993", "smtp.gmail.com", "25"},
+//                {"imap.web.de", "993", "smtp.web.de", "25"},
+//                {"imap.gmx.net", "993", "mail.gmx.net", "25"},
+//                {"imap.mail.me.com", "993", "smtp.mail.me.com", "25"},
+//                {"secureimap.t-online.de", "993", "securesmtp.t-online.de", "25"}
+//        };
+        providerlist = new EMailProvider[6];
+        providerlist[0] = new EMailProvider("OTHER","Imap server", "Imap port", "Smtp server", "Smtp port");
+        providerlist[1] = new EMailProvider("GMAIL", "imap.gmail.com", "993", "smtp.gmail.com", "25");
+        providerlist[2] = new EMailProvider("WEB", "imap.web.de", "993", "smtp.web.de", "25");
+        providerlist[3] = new EMailProvider("GMX", "imap.gmx.net", "993", "mail.gmx.net", "25");
+        providerlist[4] = new EMailProvider("ICLOUD", "imap.mail.me.com", "993", "smtp.mail.me.com", "25");
+        providerlist[5] = new EMailProvider("T-ONLINE", "secureimap.t-online.de", "993", "securesmtp.t-online.de", "25");
 
-        JTextField imapServer, imapPort, smtpServer, smtpPort;
         JButton save;
 
-        // DropDown stuff#
-        mailProvider = new JComboBox(providers);
-        mailProvider.setSelectedIndex(0);
+        // DropDown stuff
+        mailProvider = new JComboBox(new String[]{providerlist[0].getName(), providerlist[1].getName(), providerlist[2].getName(), providerlist[3].getName(), providerlist[4].getName(), providerlist[5].getName()});
+        mailProvider.setSelectedIndex(Main.storage.getPreselect());
         mailProvider.setFont(new Font("Arial", Font.BOLD, 16));
         mailProvider.setFocusable(false);
         add(mailProvider);
-        // TextField stuff
 
-        imapServer = new JTextField(providerData[mailProvider.getSelectedIndex()][0]);
+        // TextField stuff
+        EMailProvider provider = Main.storage.getMailProvider();
+        imapServer = new JTextField(provider.getImapserver());
         imapServer.setFont(new Font("Arial", Font.PLAIN, 16));
         imapServer.setToolTipText("Example \"imap.gmail.com\"");
-//        if(mailProvider.getSelectedIndex() == 0) imapServer.setForeground(Color.lightGray);
         imapServer.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
                 if (imapServer.getText().equals("Imap server"))
                     imapServer.setText("");
-//                imapServer.setForeground(Color.black);
             }
 
             @Override
             public void focusLost(FocusEvent e) {
                 if (imapServer.getText().equals("")) {
-//                    imapServer.setForeground(Color.lightGray);
                     imapServer.setText("Imap server");
                 }
             }
         });
         add(imapServer);
-        imapPort = new JTextField(providerData[mailProvider.getSelectedIndex()][1]);
+        imapPort = new JTextField(provider.getImapport());
         imapPort.setFont(new Font("Arial", Font.PLAIN, 16));
         imapPort.setToolTipText("Example \"993\"");
-//        if(mailProvider.getSelectedIndex() == 0) imapPort.setForeground(Color.lightGray);
         imapPort.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
                 if (imapPort.getText().equals("Imap port"))
                     imapPort.setText("");
-//                imapPort.setForeground(Color.black);
             }
 
             @Override
             public void focusLost(FocusEvent e) {
                 if (imapPort.getText().equals("")) {
-//                    imapPort.setForeground(Color.lightGray);
                     imapPort.setText("Imap port");
                 }
             }
         });
         add(imapPort);
-        smtpServer = new JTextField(providerData[mailProvider.getSelectedIndex()][2]);
+        smtpServer = new JTextField(provider.getSmtpserver());
         smtpServer.setFont(new Font("Arial", Font.PLAIN, 16));
         smtpServer.setToolTipText("Example \"smtp.gmail.com\"");
-//        if(mailProvider.getSelectedIndex() == 0) smtpServer.setForeground(Color.lightGray);
         smtpServer.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
                 if (smtpServer.getText().equals("Smtp server"))
                     smtpServer.setText("");
-//                smtpServer.setForeground(Color.black);
             }
 
             @Override
             public void focusLost(FocusEvent e) {
                 if (smtpServer.getText().equals("")) {
-//                    smtpServer.setForeground(Color.lightGray);
                     smtpServer.setText("Smtp server");
                 }
             }
         });
         add(smtpServer);
-        smtpPort = new JTextField(providerData[mailProvider.getSelectedIndex()][3]);
+        smtpPort = new JTextField(provider.getSmtpport());
         smtpPort.setFont(new Font("Arial", Font.PLAIN, 16));
         smtpPort.setToolTipText("Example \"20\"");
-//        if(mailProvider.getSelectedIndex() == 0) smtpPort.setForeground(Color.lightGray);
         smtpPort.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
                 if (smtpPort.getText().equals("Smtp port"))
                     smtpPort.setText("");
-//                smtpPort.setForeground(Color.black);
             }
 
             @Override
             public void focusLost(FocusEvent e) {
                 if (smtpPort.getText().equals("")) {
-//                    smtpPort.setForeground(Color.lightGray);
                     smtpPort.setText("Smtp port");
                 }
             }
         });
         add(smtpPort);
 
-        String[] data = getStaticServerCreds();
-        imapServer.setText(data[0]);
-        if (imapServer.getText().equals("")) {
-//            imapServer.setForeground(Color.lightGray);
-            imapServer.setText("Imap server");
-        }
-//        else imapServer.setForeground(Color.black);
-        imapPort.setText(data[1]);
-        if (imapPort.getText().equals("")) {
-//            imapPort.setForeground(Color.lightGray);
-            imapPort.setText("Imap port");
-        }
-//        else imapPort.setForeground(Color.black);
-        smtpServer.setText(data[2]);
-        if (smtpServer.getText().equals("")) {
-//            smtpServer.setForeground(Color.lightGray);
-            smtpServer.setText("Smtp server");
-        }
-//        else smtpServer.setForeground(Color.black);
-        smtpPort.setText(data[3]);
-        if (smtpPort.getText().equals("")) {
-//            smtpPort.setForeground(Color.lightGray);
-            smtpPort.setText("Smtp port");
-        }
-//        else smtpPort.setForeground(Color.black);
-        try {
-            mailProvider.setSelectedIndex(Integer.parseInt(data[4]));
-        } catch (Exception e) {
-            mailProvider.setSelectedIndex(0);
-        }
+//        String[] data = getStaticServerCreds();
+//        imapServer.setText(data[0]);
+//        if (imapServer.getText().equals("")) {
+//            imapServer.setText("Imap server");
+//        }
+//        imapPort.setText(data[1]);
+//        if (imapPort.getText().equals("")) {
+//            imapPort.setText("Imap port");
+//        }
+//        smtpServer.setText(data[2]);
+//        if (smtpServer.getText().equals("")) {
+//            smtpServer.setText("Smtp server");
+//        }
+//        smtpPort.setText(data[3]);
+//        if (smtpPort.getText().equals("")) {
+//            smtpPort.setText("Smtp port");
+//        }
+//        try {
+//            mailProvider.setSelectedIndex(Integer.parseInt(data[4]));
+//        } catch (Exception e) {
+//            mailProvider.setSelectedIndex(0);
+//        }
         // JButton Stuff
         save = new JButton("Save!");
         save.setFont(new Font("Arial", Font.PLAIN, 16));
         save.setFocusable(false);
         save.addActionListener(e -> {
-            if (imapServer.getText().equals(providerData[0][0]) || imapPort.getText().equals(providerData[0][1]) ||
-                    smtpServer.getText().equals(providerData[0][2]) || smtpPort.getText().equals(providerData[0][3]) ||
-                    imapServer.getText().equals("") || imapPort.getText().equals("") ||
-                    smtpServer.getText().equals("") || smtpPort.getText().equals("")) {
-                JOptionPane.showMessageDialog(null, "Incorrect Data");
-            } else {
-                try {
-                    serverCredFile.createNewFile();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-                PrintWriter pw = null;
-                try {
-                    pw = new PrintWriter(new BufferedWriter(new FileWriter("data/serverCreds.txt", false)), true);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-                pw.println(imapServer.getText() + "\n" + imapPort.getText() + "\n" + smtpServer.getText() + "\n" + smtpPort.getText() + "\n" + mailProvider.getSelectedIndex());
-                pw.close();
+            if(imapServer.getText().equals("Imap server") || imapPort.getText().equals("Imap port") ||
+                    smtpServer.getText().equals("Smtp server") || smtpPort.getText().equals("Smtp port")) {
+                JOptionPane.showMessageDialog(null, "You need to configure the email server data in order to use the programm");
             }
-
+            provider.setImapserver(imapServer.getText());
+            provider.setImapport(imapPort.getText());
+            provider.setSmtpserver(smtpServer.getText());
+            provider.setSmtpport(smtpPort.getText());
+            Main.storage.setMailProvider(provider);
+            Main.storage.setPreselect(mailProvider.getSelectedIndex());
+            Main.storage.save();
         });
         add(save);
 
         mailProvider.addActionListener(e -> {
-            if (autoSelect) {
-                mailProvider.setSelectedIndex(setSelectedProvider);
-                autoSelect = false;
-            }
-            imapServer.setText(providerData[mailProvider.getSelectedIndex()][0]);
-            imapPort.setText(providerData[mailProvider.getSelectedIndex()][1]);
-            smtpServer.setText(providerData[mailProvider.getSelectedIndex()][2]);
-            smtpPort.setText(providerData[mailProvider.getSelectedIndex()][3]);
+            setProviderData(providerlist[mailProvider.getSelectedIndex()]);
         });
     }
 
-    public static String[] getStaticServerCreds() throws IOException {
-        Scanner scs;
-        String[] serverCreds = new String[5];
-        try {
-            scs = new Scanner(serverCredFile);
-        } catch (Exception e) {
-            serverCredFile.createNewFile();
-            scs = new Scanner(serverCredFile);
-        }
-        try {
-            serverCreds[0] = scs.nextLine();
-        } catch (Exception e) {
-            serverCreds[0] = "";
-        }
-        try {
-            serverCreds[1] = scs.nextLine();
-        } catch (Exception e) {
-            serverCreds[1] = "";
-        }
-        try {
-            serverCreds[2] = scs.nextLine();
-        } catch (Exception e) {
-            serverCreds[2] = "";
-        }
-        try {
-            serverCreds[3] = scs.nextLine();
-        } catch (Exception e) {
-            serverCreds[3] = "";
-        }
-        try {
-            serverCreds[4] = scs.nextLine();
-        } catch (Exception e) {
-            serverCreds[4] = "";
-        }
-        return serverCreds;
+    // This method get's called to check if the mail adress contains an existing provider to set this automatically
+    public void checkProvider() {
+        int setSelectedProvider;
+        if (Main.storage.getYourmail().toLowerCase(Locale.ROOT).contains("gmail")) setSelectedProvider = 1;
+        else if (Main.storage.getYourmail().toLowerCase(Locale.ROOT).contains("web")) setSelectedProvider = 2;
+        else if (Main.storage.getYourmail().toLowerCase(Locale.ROOT).contains("gmx")) setSelectedProvider = 3;
+        else if (Main.storage.getYourmail().toLowerCase(Locale.ROOT).contains("icloud")) setSelectedProvider = 4;
+        else if (Main.storage.getYourmail().toLowerCase(Locale.ROOT).contains("t-online")) setSelectedProvider = 5;
+        else setSelectedProvider = 0;
+        mailProvider.setSelectedIndex(setSelectedProvider);
+        setProviderData(providerlist[setSelectedProvider]);
+        //"OTHER", "GMAIL", "WEB", "GMX", "ICLOUD", "T-ONLINE"
     }
 
-    public void checkProvider(String mailAdress) {
-        String selected;
-        autoSelect = true;
-        if (mailAdress.toLowerCase(Locale.ROOT).contains("gmail")) selected = "1";
-        else if (mailAdress.toLowerCase(Locale.ROOT).contains("web")) selected = "2";
-        else if (mailAdress.toLowerCase(Locale.ROOT).contains("gmx")) selected = "3";
-        else if (mailAdress.toLowerCase(Locale.ROOT).contains("icloud")) selected = "4";
-        else if (mailAdress.toLowerCase(Locale.ROOT).contains("t-online")) selected = "5";
-        else selected = "0";
-        setSelectedProvider = Integer.parseInt(selected);
-        mailProvider.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null));
-        //"OTHER", "GMAIL", "WEB", "GMX", "ICLOUD", "T-ONLINE"
+    private void setProviderData(EMailProvider provider){
+        imapServer.setText(providerlist[mailProvider.getSelectedIndex()].getImapserver());
+        imapPort.setText(providerlist[mailProvider.getSelectedIndex()].getImapport());
+        smtpServer.setText(providerlist[mailProvider.getSelectedIndex()].getSmtpserver());
+        smtpPort.setText(providerlist[mailProvider.getSelectedIndex()].getSmtpport());
     }
 }

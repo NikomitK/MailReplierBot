@@ -2,6 +2,8 @@ package de.nikomitk.mailreplierbot;
 
 import com.formdev.flatlaf.FlatDarculaLaf;
 import com.formdev.flatlaf.FlatLightLaf;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -11,73 +13,56 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Scanner;
 
+@Setter
+@Getter
 public class SettingsGui extends JFrame {
 
-    private static final File serverCredFile = new File("data" + File.separator + "serverCreds.txt");
     private final JTextField yourMail;
     private final JTextField senderMail;
     private final JPasswordField yourPassword;
     private final JTextArea yourReply;
     private final JTextArea replyTo;
     private final String[] serverCreds = new String[4];
-    public JButton save;
-    public MailServerSettings serverSettings;
-    public boolean startupTheme = true;
-    public int searchDelay = 10;
+    private final JButton save;
+    private MailServerSettings serverSettings;
+    private final Font textfieldFont;
     boolean openGui;
-    Scanner scc = null;
+    private int searchDelay = 10;
 
 
     public SettingsGui() throws IOException {
-        File replierConf = new File("data" + File.separator + "replierConf.conf");
-        try {
-            replierConf.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            Scanner sc = new Scanner(replierConf);
-            String line1 = sc.nextLine();
-            if (line1.equals("false")) startupTheme = false;
-            try {
-                String line2 = sc.nextLine();
-                if (!line2.equals("") && !line2.equals("null"))
-                    searchDelay = Integer.parseInt(line2);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    textfieldFont = new Font("Arial", Font.PLAIN, 16);
         FlatLightLaf.install();
-        if (startupTheme) {
+        if (Main.storage.isDarktheme()) {
             try {
                 UIManager.setLookAndFeel(new FlatDarculaLaf());
             } catch (UnsupportedLookAndFeelException e) {
                 e.printStackTrace();
             }
-            SwingUtilities.updateComponentTreeUI(this);
         } else {
             try {
                 UIManager.setLookAndFeel(new FlatLightLaf());
             } catch (UnsupportedLookAndFeelException e) {
                 e.printStackTrace();
             }
-            SwingUtilities.updateComponentTreeUI(this);
         }
+        SwingUtilities.updateComponentTreeUI(this);
         setUndecorated(true);
         getRootPane().setWindowDecorationStyle(JRootPane.FRAME);
         SwingUtilities.updateComponentTreeUI(this);
         pack();
-        setSize(500, 500);
-        final JPanel everyThing, left, right, lTop, lBottom;
-        JScrollPane replyPane, areaPane;
+        setSize(500, 600);
+        final JPanel everyThing;
+        final JPanel left;
+        final JPanel right;
+        final JPanel lTop;
+        final JPanel lBottom;
+        JScrollPane replyPane;
+        JScrollPane areaPane;
         setVisible(false);
         if (SystemTray.isSupported()) {
             SystemTray tray = SystemTray.getSystemTray();
@@ -91,7 +76,6 @@ public class SettingsGui extends JFrame {
             defaultItem = new MenuItem("Exit");
             defaultItem.addActionListener(e -> System.exit(0));
             popup.add(defaultItem);
-            //TrayIcon trayIcon = new TrayIcon(ImageIO.read(new FileInputStream("pics/MailReplierLogo.png")), "Mail Reply Bot", popup);
             TrayIcon trayIcon;
             try {
                 trayIcon = new TrayIcon(ImageIO.read(new FileInputStream("pics/MailReplierLogo.png")), "Mail Reply Bot", popup);
@@ -122,25 +106,22 @@ public class SettingsGui extends JFrame {
                     } catch (AWTException awtException) {
                         awtException.printStackTrace();
                     }
-                } else if (e.getNewState() == MAXIMIZED_BOTH) {
+                } else if (e.getNewState() == MAXIMIZED_BOTH || e.getNewState() == NORMAL) {
                     tray.remove(finalTrayIcon);
                     setVisible(true);
-                    setSize(500, 500);
-                } else if (e.getNewState() == NORMAL) {
-                    tray.remove(finalTrayIcon);
-                    setVisible(true);
-                    setSize(500, 500);
+                    pack();
+                    setSize(500, 600);
                 }
             });
         }
         setTitle("Mail-Replier Settings");
         setIconImage(ImageIO.read(new FileInputStream("pics/MailReplierLogo.png")));
-        setDefaultCloseOperation(JFrame.ICONIFIED);
+        setDefaultCloseOperation(ICONIFIED);
         setResizable(false);
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                setExtendedState(JFrame.ICONIFIED);
+                setExtendedState(ICONIFIED);
             }
         });
 
@@ -159,8 +140,8 @@ public class SettingsGui extends JFrame {
         left.add(lBottom);
 
         // LTOP stuff
-        yourMail = new JTextField("Your Mail address");
-        yourMail.setFont(new Font("Arial", Font.PLAIN, 16));
+        yourMail = new JTextField(Main.storage.getYourmail());
+        yourMail.setFont(textfieldFont);
         yourMail.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -177,9 +158,11 @@ public class SettingsGui extends JFrame {
         });
         lTop.add(yourMail);
         yourPassword = new JPasswordField();
-        yourPassword.setFont(new Font("Arial", Font.PLAIN, 16));
-        yourPassword.setText("Your Password");
-        yourPassword.setEchoChar((char) 0);
+        yourPassword.setFont(textfieldFont);
+        yourPassword.setText(Main.storage.getPassword());
+        if (Main.storage.getPassword().equals("Your Password")) {
+            yourPassword.setEchoChar((char) 0);
+        }
         yourPassword.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -198,8 +181,8 @@ public class SettingsGui extends JFrame {
             }
         });
         lTop.add(yourPassword);
-        senderMail = new JTextField("Who you want to reply to");
-        senderMail.setFont(new Font("Arial", Font.PLAIN, 16));
+        senderMail = new JTextField(Main.storage.getSendermail());
+        senderMail.setFont(textfieldFont);
         senderMail.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -217,7 +200,7 @@ public class SettingsGui extends JFrame {
         lTop.add(senderMail);
 
         // TextArea stuff
-        replyTo = new JTextArea("Text to reply to");
+        replyTo = new JTextArea(Main.storage.getTrigger());
         replyTo.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -234,8 +217,8 @@ public class SettingsGui extends JFrame {
         });
         replyTo.setColumns(50);
         replyTo.setRows(50);
-        replyTo.setFont(new Font("Arial", Font.PLAIN, 16));
-        yourReply = new JTextArea("Your reply");
+        replyTo.setFont(textfieldFont);
+        yourReply = new JTextArea(Main.storage.getYourreply());
         yourReply.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -252,78 +235,35 @@ public class SettingsGui extends JFrame {
         });
         yourReply.setColumns(5);
         yourReply.setRows(5);
-        yourReply.setFont(new Font("Arial", Font.PLAIN, 16));
+        yourReply.setFont(textfieldFont);
         areaPane = new JScrollPane(replyTo);
         right.add(areaPane, BorderLayout.PAGE_START);
         replyPane = new JScrollPane(yourReply);
         lBottom.add(replyPane, BorderLayout.PAGE_START);
         save = new JButton("Save!");
-        save.setFont(new Font("Arial", Font.PLAIN, 16));
+        save.setFont(textfieldFont);
         save.setFocusable(false);
         save.addActionListener(new Main());
         lTop.add(save);
         pack();
-        setSize(500, 500);
-        try {
-            scc = new Scanner(new File("data/creds.txt"));
-            yourMail.setText(scc.nextLine() + "");
-            openGui = false;
-        } catch (Exception e) {
-            e.printStackTrace();
-            openGui = true;
-        }
-        try {
-            yourPassword.setText(scc.nextLine());
-            yourPassword.setEchoChar('*');
-            openGui = false;
-        } catch (Exception e) {
-            e.printStackTrace();
-            openGui = true;
-        }
-        try {
-            String sendErMail = scc.nextLine();
-            if (!sendErMail.equals(yourMail.getText())) {
-                senderMail.setText(sendErMail);
-                openGui = false;
-            } else throw new Exception("No Sender Email");
-        } catch (Exception e) {
-            e.printStackTrace();
-            senderMail.setText("Who you want to reply to");
-            openGui = true;
-        }
-        try {
-            Scanner scr = new Scanner(new File("data/reply.txt"));
-            yourReply.setText(scr.nextLine());
-        } catch (Exception e) {
-            e.printStackTrace();
-            openGui = true;
-        }
-        try {
-            Scanner sct = new Scanner(new File("data/trigger.txt"));
-            replyTo.setText(sct.nextLine());
-        } catch (Exception e) {
-            e.printStackTrace();
-            openGui = true;
-        }
-        Main.credsSet = !openGui;
-        setVisible(true);
-        if (!openGui) setExtendedState(JFrame.ICONIFIED);
+        setSize(500, 600);
+
 
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Reply Settings", null, everyThing, "Settings for the reply");
         serverSettings = new MailServerSettings();
         tabbedPane.addTab("Server Settings", null, serverSettings, "Settings for the mailserver");
-        tabbedPane.addTab("Application Settings", null, new ApplicationSettings(startupTheme, searchDelay), "Settings for this application");
+        tabbedPane.addTab("Application Settings", null, new ApplicationSettings(), "Settings for this application");
         add(tabbedPane);
         tabbedPane.setSelectedIndex(0);
         pack();
-        setSize(500, 500);
+        setSize(500, 600);
+        setVisible(true);
     }
 
 
     public String getYourMail() {
         if (yourMail.getText().equals("Your Mail address") || yourMail.getText().equals("") || !yourMail.getText().contains("@")) {
-            //throw new Exception("no mail adress provided");
             return "false";
         } else return yourMail.getText();
     }
@@ -338,7 +278,7 @@ public class SettingsGui extends JFrame {
         if (yourMail.getText().equals("Who you want to reply to") ||
                 yourMail.getText().equals("") ||
                 !yourMail.getText().contains("@"))
-            return "false";
+            return "Who you want to reply to";
         else return senderMail.getText();
     }
 
@@ -351,52 +291,5 @@ public class SettingsGui extends JFrame {
         if (replyTo.getText().equals("Text to reply to") || replyTo.getText().equals("")) return "false";
         else return replyTo.getText();
     }
-
-    public String getLastSubject() {
-        try {
-            Scanner scl = new Scanner(new File("lastSubject.txt"));
-            return scl.nextLine();
-        } catch (Exception e) {
-            e.printStackTrace();
-            new File(File.separator + "lastSubject.txt");
-            return null;
-        }
-    }
-
-    public String[] getServerCreds() throws IOException {
-        Scanner scs;
-        try {
-            scs = new Scanner(serverCredFile);
-        } catch (Exception e) {
-            serverCredFile.createNewFile();
-            scs = new Scanner(serverCredFile);
-        }
-        try {
-            serverCreds[0] = scs.nextLine();
-        } catch (Exception e) {
-            openGui = true;
-            serverCreds[0] = "";
-        }
-        try {
-            serverCreds[1] = scs.nextLine();
-        } catch (Exception e) {
-            openGui = true;
-            serverCreds[1] = "";
-        }
-        try {
-            serverCreds[2] = scs.nextLine();
-        } catch (Exception e) {
-            openGui = true;
-            serverCreds[2] = "";
-        }
-        try {
-            serverCreds[3] = scs.nextLine();
-        } catch (Exception e) {
-            openGui = true;
-            serverCreds[3] = "";
-        }
-        return serverCreds;
-    }
-
 
 }

@@ -4,10 +4,13 @@ plugins {
 
 
 group 'de.nikomitk.mailreplierbot'
-version '0.9'
+version '1.0'
 
 repositories {
     mavenCentral()
+    maven{
+        url = uri("https://raw.githubusercontent.com/yoyosource/YAPION/master/releases")
+    }
 }
 
 apply plugin: 'java'
@@ -17,6 +20,11 @@ dependencies {
     compile 'com.sun.mail:javax.mail:1.6.2'
     compile 'javax.activation:activation:1.1.1'
     compile 'com.formdev:flatlaf:1.1.2'
+    compileOnly 'org.projectlombok:lombok:1.18.6'
+    testCompileOnly 'org.projectlombok:lombok:1.18.6'
+    annotationProcessor 'org.projectlombok:lombok:1.18.6'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.6'
+    implementation 'yoyosource:YAPION:0.25.3'
 }
 jar {
     manifest {
