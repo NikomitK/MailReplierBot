@@ -18,6 +18,7 @@ public class Storage {
 
     // Main stuff
     private boolean credsset = false;
+    private String lastsubject = null;
 
     // Settingsgui stuff
     private String yourmail = "Your Mail address";
@@ -25,8 +26,7 @@ public class Storage {
     private String sendermail = "Who you want to reply to";
     private String yourreply = "Your reply";
     private String trigger = "Text to reply to";
-
-    private String lastsubject = null;
+    private boolean minimizetotray = true;
 
     // MailServerSettings stuff
     private EMailProvider mailProvider = new EMailProvider("OTHER", "Imap server", "Imap port", "Smtp server", "Smtp port");

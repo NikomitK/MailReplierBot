@@ -6,11 +6,12 @@ import yapion.annotations.object.YAPIONData;
 
 
 @YAPIONData
-public class EMailProvider{
+public class EMailProvider {
     @Getter
     @Setter
     private String name, imapserver, imapport, smtpserver, smtpport;
-    public EMailProvider(String name, String imapserver, String imapport, String smtpserver, String smtpport){
+
+    public EMailProvider(String name, String imapserver, String imapport, String smtpserver, String smtpport) {
         this.name = name;
         this.imapserver = imapserver;
         this.imapport = imapport;
