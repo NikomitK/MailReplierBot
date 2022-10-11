@@ -2,8 +2,6 @@ package de.nikomitk.mailreplierbot;
 
 import lombok.Getter;
 import lombok.Setter;
-import yapion.parser.YAPIONParser;
-import yapion.serializing.YAPIONDeserializer;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -15,12 +13,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 
-
+//TODO change yapion to gson
 public class Main {
     public static final Object lock = new Object();
     @Getter
     private static final String FALSE = "false";
-    private static final File storageFile = new File("storage.yapion");
+    private static final File storageFile = new File("storage.json");
     public static Storage storage;
     @Getter
     @Setter
@@ -32,6 +30,7 @@ public class Main {
     private static long searchdelay;
 
     public static void main(String[] args) throws IOException, InterruptedException {
+        // move to method
         if (storageFile.exists()) {
             storage = (Storage) YAPIONDeserializer.deserialize(YAPIONParser.parse(storageFile));
         } else {
@@ -39,8 +38,11 @@ public class Main {
         }
         credsset = storage.isCredsset();
         searchdelay = storage.getSearchdelay();
+
         DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd");
+
         gui = new SettingsGui();
+        
         while (!credsset) {
             synchronized (lock) {
                 lock.wait();
@@ -116,6 +118,10 @@ public class Main {
             }
 
         }
+    }
+
+    private static void initStorage(){
+
     }
 
 
