@@ -43,7 +43,7 @@ public class ReplySettings extends JPanel {
         lBottom.setBorder(test);
         left.add(lBottom);
 
-        // LTOP stuff
+        // Left Top stuff
         yourMail = new JTextField(Main.storage.getYourmail());
         yourMail.setFont(textfieldfont);
         yourMail.addFocusListener(new FocusListener() {
@@ -128,7 +128,7 @@ public class ReplySettings extends JPanel {
         });
         lTop.add(save);
 
-        // LBottom stuff
+        // Left Bottom stuff
         yourReply = new JTextArea(Main.storage.getYourreply());
         yourReply.addFocusListener(new FocusListener() {
             @Override

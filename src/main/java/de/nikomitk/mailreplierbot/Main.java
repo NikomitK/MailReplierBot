@@ -28,18 +28,12 @@ public class Main {
     @Setter
     @Getter
     private static long searchdelay;
+    private static DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd");
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        // move to method
-        if (storageFile.exists()) {
-            storage = (Storage) YAPIONDeserializer.deserialize(YAPIONParser.parse(storageFile));
-        } else {
-            storage = new Storage();
-        }
-        credsset = storage.isCredsset();
-        searchdelay = storage.getSearchdelay();
 
-        DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd");
+        initStorage()
+
 
         gui = new SettingsGui();
         
@@ -58,8 +52,9 @@ public class Main {
                 String triggerText = storage.getTrigger();
                 String lastSubject = storage.getLastsubject();
                 String today = dateFormat.format(new Date());
-                Properties properties = new Properties();
                 EMailProvider provider = storage.getMailProvider();
+
+                Properties properties = new Properties();
                 properties.put("mail.imap.host", provider.getImapserver());
                 properties.put("mail.imap.port", provider.getImapport());
                 properties.put("mail.imap.starttls.enable", "true");
@@ -67,7 +62,9 @@ public class Main {
                 properties.put("mail.smtp.starttls.enable", "true");
                 properties.put("mail.smtp.host", provider.getSmtpserver());
                 properties.put("mail.smtp.port", provider.getSmtpport());
+
                 Session session = Session.getDefaultInstance(properties);
+
                 try {
                     Store store = session.getStore("imaps");
                     store.connect(provider.getImapserver(), yourMail,
@@ -80,16 +77,16 @@ public class Main {
                     if (messages.length != 0) {
                         for (int i = messages.length - 1; i > 0; i--) {
                             MimeMessage message = (MimeMessage) messages[i];
-                            if (!today.equals(dateFormat.format(message.getSentDate()))) {
+                            if (dateMatches(message.getSentDate(), today)) {
                                 break;
                             }
-                            if (!getMailAdress(InternetAddress.toString(message.getFrom())).equals(senderMail)) {
+                            if (addressMatches(message.getFrom(), senderMail)) {
                                 continue;
                             }
-                            if (lastSubject != null && message.getSubject().contains(lastSubject)) {
+                            if (subjectMatches(message.getSubject(), lastSubject)) {
                                 break;
                             }
-                            if (!new MimeMessageParser(message).parse().getPlainContent().contains(triggerText)) {
+                            if (textMatches(message, triggerText)) {
                                 continue;
                             }
                             //write reply
@@ -121,7 +118,13 @@ public class Main {
     }
 
     private static void initStorage(){
-
+        if (storageFile.exists()) {
+            storage = (Storage) YAPIONDeserializer.deserialize(YAPIONParser.parse(storageFile));
+        } else {
+            storage = new Storage();
+        }
+        credsset = storage.isCredsset();
+        searchdelay = storage.getSearchdelay();
     }
 
 
@@ -151,6 +154,23 @@ public class Main {
             if (from.charAt(i) == '<') return from.substring(i + 1, from.length() - 1);
         }
         return from;
+    }
+
+    private static boolean dateMatches(Date receivedDate, String today){
+        return today.equals(dateFormat.format(receivedDate))
+    }
+
+    private static boolean addressMatches(String receivedAdress, String providedAddress) {
+        return getMailAdress(InternetAddress.toString(receivedAdress)).equals(providedAddress)
+    }
+
+    private static boolean subjectMatches(String receivedSubject, String providedSubject){
+        return providedSubject != null && receivedSubject.contains(providedSubject)
+    }
+
+    private static boolean textMatches(String receivedMessage, String providedText) {
+        String messageText = new MimeMessageParser(message).parse().getPlainContent()
+        return messageText.contains(providedText)
     }
 
 }
