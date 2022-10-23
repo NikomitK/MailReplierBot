@@ -23,6 +23,9 @@ public class Storage {
     // Settingsgui stuff
     private String yourmail = "Your Mail address";
     private String password = "Your Password";
+    /**
+     * The email adress of the person you want to reply to
+     */
     private String sendermail = "Who you want to reply to";
     private String yourreply = "Your reply";
     private String trigger = "Text to reply to";

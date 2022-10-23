@@ -134,7 +134,9 @@ public class MailServerSettings extends JPanel {
 
     }
 
-    // This method get's called to check if the mail adress contains an existing provider to set this automatically
+    /**
+     * This method gets called to check if the mail adress contains an existing provider to set this automatically
+      */
     public void checkProvider() {
         int setSelectedProvider;
         if (Main.storage.getYourmail().toLowerCase(Locale.ROOT).contains("gmail")) setSelectedProvider = 1;

@@ -9,6 +9,7 @@ import java.awt.event.FocusListener;
 public class ReplySettings extends JPanel {
 
     private final JTextField yourMail;
+
     private final JTextField senderMail;
     private final JPasswordField yourPassword;
     private final JTextArea yourReply;
@@ -109,13 +110,8 @@ public class ReplySettings extends JPanel {
         save.setFont(textfieldfont);
         save.setFocusable(false);
         save.addActionListener(e ->{
-            Main.storage.setYourmail(getYourMail());
-            Main.storage.setSendermail(getSenderMail());
-            Main.storage.setPassword(getYourPassword());
-            Main.storage.setYourreply(getYourReply());
-            Main.storage.setTrigger(getTrigger());
-            if (!Main.storage.getYourmail().equals(Main.getFALSE()) && !Main.storage.getPassword().equals(Main.getFALSE()) && !Main.storage.getSendermail().equals(Main.getFALSE())
-                    && !Main.storage.getYourreply().equals(Main.getFALSE()) && !Main.storage.getTrigger().equals(Main.getFALSE())) {
+            setStorageData();
+            if (validateStorageData()) {
                 Main.storage.setCredsset(true);
                 Main.storage.save();
                 Main.getGui().getServerSettings().checkProvider();
@@ -198,6 +194,26 @@ public class ReplySettings extends JPanel {
         if (replyTo.getText().equals(STDREPLYTO) || replyTo.getText().equals(""))
             return Main.getFALSE();
         else return replyTo.getText();
+    }
+
+    /**
+     * Puts the user data into the storage
+     */
+    private void setStorageData(){
+        Main.storage.setYourmail(getYourMail());
+        Main.storage.setSendermail(getSenderMail());
+        Main.storage.setPassword(getYourPassword());
+        Main.storage.setYourreply(getYourReply());
+        Main.storage.setTrigger(getTrigger());
+    }
+
+    /**
+     * Checks if the user has set the credentials
+     * @return true if the user has set the credentials
+     */
+    private boolean validateStorageData(){
+        return !Main.storage.getYourmail().equals(Main.getFALSE()) && !Main.storage.getPassword().equals(Main.getFALSE()) && !Main.storage.getSendermail().equals(Main.getFALSE())
+                && !Main.storage.getYourreply().equals(Main.getFALSE()) && !Main.storage.getTrigger().equals(Main.getFALSE());
     }
 
 }

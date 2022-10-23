@@ -32,11 +32,12 @@ public class Main {
 
     public static void main(String[] args) throws IOException, InterruptedException {
 
-        initStorage()
+        initStorage();
 
 
         gui = new SettingsGui();
-        
+
+        // this waits while the credentials are not set
         while (!credsset) {
             synchronized (lock) {
                 lock.wait();
@@ -54,14 +55,7 @@ public class Main {
                 String today = dateFormat.format(new Date());
                 EMailProvider provider = storage.getMailProvider();
 
-                Properties properties = new Properties();
-                properties.put("mail.imap.host", provider.getImapserver());
-                properties.put("mail.imap.port", provider.getImapport());
-                properties.put("mail.imap.starttls.enable", "true");
-                properties.put("mail.smtp.auth", "true");
-                properties.put("mail.smtp.starttls.enable", "true");
-                properties.put("mail.smtp.host", provider.getSmtpserver());
-                properties.put("mail.smtp.port", provider.getSmtpport());
+                Properties properties = initProperties(provider);
 
                 Session session = Session.getDefaultInstance(properties);
 
@@ -113,18 +107,35 @@ public class Main {
                     Thread.currentThread().interrupt();
                 }
             }
-
         }
     }
 
+    // TODO change to gson
     private static void initStorage(){
-        if (storageFile.exists()) {
-            storage = (Storage) YAPIONDeserializer.deserialize(YAPIONParser.parse(storageFile));
-        } else {
-            storage = new Storage();
-        }
-        credsset = storage.isCredsset();
-        searchdelay = storage.getSearchdelay();
+//        if (storageFile.exists()) {
+//            storage = (Storage) YAPIONDeserializer.deserialize(YAPIONParser.parse(storageFile));
+//        } else {
+//            storage = new Storage();
+//        }
+//        credsset = storage.isCredsset();
+//        searchdelay = storage.getSearchdelay();
+    }
+
+    /**
+     * Initializes the properties for the mail server
+     * @param provider
+     * @return a properties object with the data of the provider
+     */
+    private static Properties initProperties(EMailProvider provider){
+        Properties properties = new Properties();
+        properties.put("mail.imap.host", provider.getImapserver());
+        properties.put("mail.imap.port", provider.getImapport());
+        properties.put("mail.imap.starttls.enable", "true");
+        properties.put("mail.smtp.auth", "true");
+        properties.put("mail.smtp.starttls.enable", "true");
+        properties.put("mail.smtp.host", provider.getSmtpserver());
+        properties.put("mail.smtp.port", provider.getSmtpport());
+        return properties;
     }
 
 
@@ -148,7 +159,11 @@ public class Main {
         }
     }
 
-    // This method returns "mail-adress" from "name <mail-adress>"
+    /**
+     * The Message class provides emails in a very weird format, so this method parses the email to a string
+     * @param from the provided sender in the weird "name <email>" format
+     * @return only the email address
+     */
     public static String getMailAdress(String from) {
         for (int i = 0; i < from.length(); i++) {
             if (from.charAt(i) == '<') return from.substring(i + 1, from.length() - 1);
@@ -156,21 +171,45 @@ public class Main {
         return from;
     }
 
+    /**
+     * Checks if the date of the message is the same as the current date
+     * @param receivedDate the date of the received mail
+     * @param today the current date
+     * @return true if the date matches, false if not
+     */
     private static boolean dateMatches(Date receivedDate, String today){
-        return today.equals(dateFormat.format(receivedDate))
+        return today.equals(dateFormat.format(receivedDate));
     }
 
-    private static boolean addressMatches(String receivedAdress, String providedAddress) {
-        return getMailAdress(InternetAddress.toString(receivedAdress)).equals(providedAddress)
+    /**
+     * Checks if the sender of the message is the same as the sender specified in the settings
+     * @param receivedAdress the address of the received mail
+     * @param providedAddress the stored address
+     * @return true if the sender matches, false if not
+     */
+    private static boolean addressMatches(Address[] receivedAdress, String providedAddress) {
+        return getMailAdress(InternetAddress.toString(receivedAdress)).equals(providedAddress);
     }
 
+    /**
+     * Checks if the subject of the message is the same as the last subject
+     * @param receivedSubject the subject of the received mail
+     * @param providedSubject the last subject that was answered to
+     * @return true if the subject matches and is not null, false if not
+     */
     private static boolean subjectMatches(String receivedSubject, String providedSubject){
-        return providedSubject != null && receivedSubject.contains(providedSubject)
+        return providedSubject != null && receivedSubject.contains(providedSubject);
     }
 
-    private static boolean textMatches(String receivedMessage, String providedText) {
-        String messageText = new MimeMessageParser(message).parse().getPlainContent()
-        return messageText.contains(providedText)
+    /**
+     * Checks if the message contains the trigger text
+     * @param receivedMessage the text body of the received mail
+     * @param providedText the text that should trigger a reply
+     * @return true if the message contains the trigger text, false if not
+     */
+    private static boolean textMatches(MimeMessage receivedMessage, String providedText) throws Exception {
+        String messageText = new MimeMessageParser(receivedMessage).parse().getPlainContent();
+        return messageText.contains(providedText);
     }
 
 }
