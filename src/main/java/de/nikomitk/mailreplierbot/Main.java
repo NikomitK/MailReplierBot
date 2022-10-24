@@ -67,7 +67,7 @@ public class Main {
                     folder.open(Folder.READ_ONLY);
 
                     Message[] messages = folder.getMessages();
-
+                    //TODO use stream + filter...
                     if (messages.length != 0) {
                         for (int i = messages.length - 1; i > 0; i--) {
                             MimeMessage message = (MimeMessage) messages[i];
